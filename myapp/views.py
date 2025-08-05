@@ -2,14 +2,14 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Post, Comment, PostImage, PostVideo
 from .serializers import PostSerializer, CommentSerializer
 
 @api_view(['GET', 'POST'])
-@parser_classes([MultiPartParser, FormParser])
+@parser_classes([JSONParser, MultiPartParser, FormParser])
 def post_list_create(request):
     if request.method == 'GET':
         posts = Post.objects.all()

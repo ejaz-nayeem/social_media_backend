@@ -38,6 +38,9 @@ class PostImage(models.Model):
 class PostVideo(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='videos')
     video = models.FileField(upload_to='videos/')
+    
+    def __str__(self):
+        return f"Video for post {self.post.id}"
 
 
 # Comment model
