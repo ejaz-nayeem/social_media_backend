@@ -1,5 +1,7 @@
+from datetime import datetime, timezone
 from rest_framework import serializers
 from .models import Post, Comment, PostImage, PostVideo
+from cloudinary.uploader import upload
 
 # serializers.py
 
@@ -31,15 +33,22 @@ class PostSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    post_created_days_ago = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = [
             'id', 'user', 'caption', 'content_type', 'text',
-            'created_at', 'images', 'videos', 'image_files', 'video_files'
+            'created_at','post_created_days_ago', 'images', 'videos', 'image_files', 'video_files'
         ]
         read_only_fields = ['user', 'created_at', 'images', 'videos']
-
+    
+    def get_post_created_days_ago(self, obj):
+        now = datetime.now(timezone.utc)
+        diff = now - obj.created_at
+        days = diff.days
+        return f"{days} day{'s' if days != 1 else ''} ago"
+    
     def create(self, validated_data):
         image_files = validated_data.pop('image_files', [])
         video_files = validated_data.pop('video_files', [])
@@ -50,7 +59,8 @@ class PostSerializer(serializers.ModelSerializer):
             PostImage.objects.create(post=post, image=image)
 
         for video in video_files:
-            PostVideo.objects.create(post=post, video=video)
+            uploaded_video = upload(video, resource_type='video')
+            PostVideo.objects.create(post=post, video=uploaded_video['public_id'])
 
         return post
     

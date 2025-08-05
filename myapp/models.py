@@ -1,9 +1,11 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 
-# Create your models here.
-#from django.db import models
-from django.contrib.auth.models import User
-
+class library(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=255)
+    image = CloudinaryField('image')
+    video = CloudinaryField('video')
 
 
 
@@ -33,11 +35,11 @@ class Post(models.Model):
 
 class PostImage(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='images/')
+    image = CloudinaryField('image')
 
 class PostVideo(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='videos')
-    video = models.FileField(upload_to='videos/')
+    video = CloudinaryField('video')
     
     def __str__(self):
         return f"Video for post {self.post.id}"

@@ -8,20 +8,57 @@ from rest_framework import status
 from .models import Post, Comment, PostImage, PostVideo
 from .serializers import PostSerializer, CommentSerializer
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @parser_classes([JSONParser, MultiPartParser, FormParser])
 def post_list_create(request):
-    if request.method == 'GET':
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'POST':
+    
+    if request.method == 'POST':
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        pass
+        
+@api_view(['GET'])
+
+def get_all_posts(request):
+    try:
+        
+        if request.method == 'GET':
+            
+            posts = Post.objects.all()
+            serializer = PostSerializer(posts, many=True)
+            return Response(serializer.data)
+        
+    except Post.DoesNotExist:
+        return Response({'error': 'Post not found'}, status=404)
+
+@api_view(['GET'])
+def get_user_posts(request, user_id):
+    posts = Post.objects.filter(user_id=user_id)
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def get_single_post(request, pk):
+    try:
+        if request.method == 'GET':
+            
+            posts = Post.objects.get(pk=pk)
+            serializer = PostSerializer(posts)
+            return Response(serializer.data)
+    except Post.DoesNotExist:
+        return Response({'error': 'Post not found'}, status=404)
+
+    
+
+    if post.user != request.user:
+        return Response({'error': 'You are not allowed to see this post'}, status=403)
+
+    
 
 @api_view(['GET', 'POST'])
 def comment_list_create(request):
@@ -36,6 +73,7 @@ def comment_list_create(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['DELETE'])
